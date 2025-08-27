@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Edit Actor</title>
+  <link rel="stylesheet" href="https://unpkg.com/picocss@2/css/pico.min.css">
+</head>
+<body>
+<main class="container">
+  <hgroup><h1 id="title">Edit Actor</h1><p>Update first/last name</p></hgroup>
+
+  <article id="msg" style="display:none"></article>
+
+  <form id="form">
+    <input type="hidden" id="id">
+    <input type="hidden" id="lastUpdate">
+    <label>First name <input id="first" required></label><br>
+    <label>Last name  <input id="last" required></label><br>
+    <button type="submit">Save</button>
+    <a href="/ui/">Cancel</a>
+    <small id="busy" style="display:none;margin-left:.5rem">Saving…</small>
+  </form>
+</main>
+
+<script>
+const API = '/api/actors';   // no trailing slash
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+
+let currentEtag = null;
+
+function showError(t){const b=document.getElementById('msg');b.style.display='block';b.innerHTML='<b>Error:</b> '+t;}
+
+async function loadActor() {
+  if (!id) { document.getElementById('title').textContent = 'Create Actor'; return; }
+  try {
+    const res = await fetch(`${API}/${id}`);
+    if (!res.ok) { showError(`Failed to load (${res.status}).`); return; }
+    const a = await res.json();
+    document.getElementById('id').value = a.actorId ?? '';
+    document.getElementById('first').value = a.firstName || '';
+    document.getElementById('last').value  = a.lastName  || '';
+    document.getElementById('lastUpdate').value = a.lastUpdate || '';
+    currentEtag = (a._metadata && a._metadata.etag) || res.headers.get('ETag');
+  } catch { showError('Network error while loading.'); }
+}
+
+document.getElementById('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  document.getElementById('msg').style.display = 'none';
+  document.getElementById('busy').style.display = 'inline';
+
+  const firstName = document.getElementById('first').value.trim();
+  const lastName  = document.getElementById('last').value.trim();
+
+  try {
+    let res;
+    if (id) {
+      // PUT requires full doc + ETag (MRS)
+      const body = {
+        actorId: Number(id),
+        firstName,
+        lastName,
+        lastUpdate: document.getElementById('lastUpdate').value, // required by MRS mapping
+        _metadata: { etag: currentEtag }
+      };
+      res = await fetch(`${API}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    } else {
+      // create (no etag needed)
+      const body = { firstName, lastName };
+      res = await fetch(`${API}`, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(body)
+      });
+    }
+
+    if (!res.ok) {
+      const txt = await res.text();
+      if (res.status === 412) showError('Stale ETag. Reload and try again.');
+      else if (res.status === 403) showError('Forbidden: missing UPDATE privilege on /sakila/actor.');
+      else if (res.status === 400) showError('Invalid input: '+txt);
+      else showError(`Save failed (${res.status}). ${txt}`);
+      document.getElementById('busy').style.display = 'none';
+      return;
+    }
+    location.href = '/ui/';
+  } catch {
+    showError('Network error while saving.');
+    document.getElementById('busy').style.display = 'none';
+  }
+});
+
+loadActor();
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Actors</title>
+  <link rel="stylesheet" href="https://unpkg.com/picocss@2/css/pico.min.css">
+  <style>
+    header.topbar{position:sticky;top:0;z-index:10;background:var(--pico-background-color);border-bottom:1px solid var(--pico-muted-border-color)}
+    header.topbar nav{display:flex;justify-content:space-between;align-items:center}
+    #busy{display:none}
+    td code{font-size:.85em}
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <nav class="container">
+    <strong>Actors</strong>
+    <a role="button" href="/auth/logout">Logout</a>
+  </nav>
+</header>
+
+<main class="container">
+  <article>
+    <label>Last name starts with…
+      <input id="q" placeholder="e.g. GUI">
+    </label>
+    <div>
+      <button id="load">Search</button>
+      <small id="busy">Loading…</small>
+      <a href="/ui/edit.html" style="float:right">Create new</a>
+    </div>
+  </article>
+
+  <table id="tbl">
+    <thead><tr><th>ID</th><th>First</th><th>Last</th><th>Updated</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <details>
+    <summary>Live events</summary>
+    <pre id="events" style="max-height:200px;overflow:auto"></pre>
+  </details>
+</main>
+
+<script>
+const API = '/api/actors';
+const busy = document.getElementById('busy');
+const tbody = document.querySelector('#tbl tbody');
+
+async function load() {
+  busy.style.display = 'inline';
+  const q = document.getElementById('q').value.trim();
+  const params = new URLSearchParams();
+  if (q) params.set('q', JSON.stringify({ lastName: { "$like": q + "%" } }));
+  const res = await fetch(API + '?' + params.toString());
+  const data = await res.json();
+  const rows = (data.items || data.data || []);
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.actorId}</td>
+      <td>${r.firstName}</td>
+      <td>${r.lastName}</td>
+      <td><code>${r.lastUpdate}</code></td>
+      <td><a href="/ui/edit.html?id=${r.actorId}">Edit</a></td>
+      <td><a href="/ai/actors/${r.actorId}/explain">AI Summary</a></td>
+    </tr>`).join('');
+  busy.style.display = 'none';
+}
+
+document.getElementById('load').addEventListener('click', load);
+load();
+
+// Live updates
+try {
+  const ev = new EventSource('/events');
+  ev.onmessage = e => {
+    const pre = document.getElementById('events');
+    pre.textContent = (pre.textContent + '\n' + e.data).trim().slice(-2000);
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'actor.changed') load();
+    } catch {}
+  };
+} catch {}
+</script>
+</body>
+</html>
