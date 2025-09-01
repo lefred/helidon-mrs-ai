@@ -1,31 +1,36 @@
 package main.java.me.test;
 
+import io.helidon.config.Config;
 import io.helidon.webclient.api.WebClient;
 import io.helidon.webclient.api.HttpClientRequest;
 import io.helidon.webclient.api.HttpClientResponse;
-import io.helidon.http.HeaderNames;
+import io.helidon.http.HeaderNames  ;
 import io.helidon.common.media.type.MediaTypes;   // <-- use this
 import io.helidon.webclient.api.Proxy;
 import io.helidon.common.tls.Tls;
 
 public class MrsClient {
+    private final Config config = Config.create();
     private final WebClient client;
     private final String baseServicePath; // e.g., https://localhost:8443/myService
     private volatile String bearer;       // "Bearer <token>"
 
+
     // New: creds from -D props or env
-    private final String username = System.getProperty("mrs.username", System.getenv("MRS_USERNAME"));
-    private final String password = System.getProperty("mrs.password", System.getenv("MRS_PASSWORD"));
-    private final String authApp  = System.getProperty("mrs.authApp",  System.getenv("MRS_AUTH_APP"));
+    private final String username = config.get("mrs.auth.username").asString().orElseThrow();
+    private final String password = config.get("mrs.auth.password").asString().orElseThrow();
+    private final String authApp  = config.get("mrs.auth.app").asString().orElseThrow();
     // sessionType=bearer yields a JWT-like accessToken
-    private final String sessionType = System.getProperty("mrs.sessionType", "bearer");
+    private final String sessionType = config.get("mrs.auth.sessionType").asString().orElse("bearer");
+
+    private final Boolean insecureTls = config.get("mrs.insecureTls").asBoolean().orElse(false);
 
     public MrsClient(String baseUrl, String ignoredBearerToken) {
             var builder = WebClient.builder().baseUri(baseUrl);
 
     if (baseUrl.startsWith("https")) {
         builder = builder.tls(tls -> tls
-            .trustAll(Boolean.getBoolean("mrs.insecureTls"))
+            .trustAll(insecureTls)
             .endpointIdentificationAlgorithm(Tls.ENDPOINT_IDENTIFICATION_NONE) // <—
         );
     }
@@ -49,6 +54,10 @@ public class MrsClient {
             {"username":"%s","password":"%s","authApp":"%s","sessionType":"%s"}
             """.formatted(username, password, authApp, sessionType);
 
+        if (!authApp.equals("MySQL")) {
+            System.err.println("MySQL Rest Service requires -Dmrs.authApp=MySQL ('MySQL' is the only auth method supported)");
+            System.exit(1);
+        }
         HttpClientRequest req = client.post()
                 .path("/authentication/login")
                 .contentType(MediaTypes.APPLICATION_JSON);
