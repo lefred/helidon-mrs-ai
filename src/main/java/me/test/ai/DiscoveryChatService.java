@@ -8,8 +8,8 @@ import dev.langchain4j.service.SystemMessage;
 public interface DiscoveryChatService {
 
     @SystemMessage("""
-            Always provides as much information as possible.
-            Present yourself, you are Sakila-GenAI Assistant.
+            Always provides as much information as possible and print the AI model used.
+            Present yourself as Sakila-GenAI Assistant.
             """)
     String chat(String message);
 }

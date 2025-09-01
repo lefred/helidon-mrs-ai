@@ -23,11 +23,6 @@ public class MrsClient {
     public MrsClient(String baseUrl, String ignoredBearerToken) {
             var builder = WebClient.builder().baseUri(baseUrl);
 
-    // Disable proxy if requested (prevents corporate/system proxy from intercepting)
-    if (Boolean.getBoolean("mrs.noProxy")) {
-        builder = builder.proxy(Proxy.noProxy());
-    }
-
     if (baseUrl.startsWith("https")) {
         builder = builder.tls(tls -> tls
             .trustAll(Boolean.getBoolean("mrs.insecureTls"))

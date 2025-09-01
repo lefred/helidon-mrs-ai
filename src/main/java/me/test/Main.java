@@ -14,9 +14,8 @@ public class Main {
         // load logging configuration
         LogConfig.configureRuntime();
 
-        // initialize global config from default configuration
+        // initialize config from default configuration
         Config config = Config.create();
-        Config.global(config);
 
         final DiscoveryChatService chatService;
 

@@ -5,11 +5,11 @@
     <parent>
         <groupId>io.helidon.applications</groupId>
         <artifactId>helidon-se</artifactId>
-        <version>4.3.0-M1</version>
+        <version>4.3.0-M2</version>
         <relativePath/>
     </parent>
     <groupId>me.test</groupId>
-    <artifactId>genai-chat-se</artifactId>
+    <artifactId>helidon-mrs-ai</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>Helidon + MRS + LangChain4j OCI GenAI SE example</name>
 
