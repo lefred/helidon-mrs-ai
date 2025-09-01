@@ -1,0 +1,35 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+
+langchain4j:
+  oci-gen-ai:
+    chat-model:
+      enabled: true
+      region: "eu-frankfurt-1"
+      compartment-id: "ocid1.compartment.oc1."
+      #model-name: "xai.grok-3"
+      model-name: "meta.llama-3.3-70b-instruct"
+
+
+mrs:
+  # Base URL of your MRS service (service-level root, not schema-level)
+  # Examples:
+  #   https://localhost:8443/mrs
+  #   https://localhost:33060/myService
+  url: "https://localhost:33060/myService"
+
+  # Which schema/object to demo against
+  schema: "sakila"
+  object: "actor"
+
+  # Authentication for /authentication/login
+  auth:
+    app: "MySQL"        # your REST auth app name
+    username: "<USER>"    # for local testing only
+    password: "<PASSWORD>"    # for local testing only
+    sessionType: "bearer"
+
+  # For local self-signed certs. In prod, use a proper truststore and set this to false.
+  insecureTls: true
+
