@@ -32,3 +32,5 @@ $ java -Dmrs.auth.username=<USERNAME> -Dmrs.auth.password='<PASSWORD>' \
    -Dmrs.url='https://127.0.0.1:33060/myService' -Dmrs.auth.app='MySQL' \
    -Dmrs.insecureTls=true  -Dmrs.auth.sessionType=bearer -jar helidon-mrs-ai.jar
 ```
+
+Don't forget to create your own `src/main/resources/application.yaml` file. 
