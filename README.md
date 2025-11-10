@@ -34,3 +34,23 @@ $ java -Dmrs.auth.username=<USERNAME> -Dmrs.auth.password='<PASSWORD>' \
 ```
 
 Don't forget to create your own `src/main/resources/application.yaml` file. 
+
+
+## User creation
+
+You can create a user and generate his hash password using the following url:
+
+```
+$ curl 'http://127.0.0.1:8080/_debug/hash?pwd=<mypassword>'
+<my hash>
+```
+
+Then insert the user and his hash in the table:
+
+```
+SQL > insert into users (firstname, lastname, username, password_hash)
+      values ('firsntname','lastname','mylogin','<my hash>')
+```
+
+Then connect to the app: `http://127.0.0.1:8080/ui`
+
