@@ -14,8 +14,9 @@ public class Main {
         // load logging configuration
         LogConfig.configureRuntime();
 
-        // initialize config from default configuration
+        // initialize global config from default configuration
         Config config = Config.create();
+        Config.global(config);
 
         final DiscoveryChatService chatService;
 
@@ -41,11 +42,11 @@ public class Main {
                 .routing((r) -> {
                     r.get("/", (req, res) -> res.send("Helidon 4.3 + MySQL REST Service + AI"));
 
-                    //r.post("/chat", (req, res) -> {
-                    //    var prompt = req.content().as(String.class);
-                    //    var response = chatService.chat(prompt);
-                    //    res.send(response);
-                    //});
+                    r.post("/chat", (req, res) -> {
+                        var prompt = req.content().as(String.class);
+                        var response = chatService.chat(prompt);
+                        res.send(response);
+                    });
 
                     Auth.registerRoutes(r, mrs);
                     Ui.registerRoutes(r);

@@ -4,7 +4,7 @@ import io.helidon.config.Config;
 import io.helidon.webclient.api.WebClient;
 import io.helidon.webclient.api.HttpClientRequest;
 import io.helidon.webclient.api.HttpClientResponse;
-import io.helidon.http.HeaderNames  ;
+import io.helidon.http.HeaderNames;
 import io.helidon.common.media.type.MediaTypes;   // <-- use this
 import io.helidon.webclient.api.Proxy;
 import io.helidon.common.tls.Tls;
@@ -17,20 +17,23 @@ public class MrsClient {
 
 
     // New: creds from -D props or env
-    private final String username = config.get("mrs.auth.username").asString().orElseThrow();
-    private final String password = config.get("mrs.auth.password").asString().orElseThrow();
-    private final String authApp  = config.get("mrs.auth.app").asString().orElseThrow();
+    private final String username = System.getProperty("mrs.auth.username", System.getenv("MRS_USERNAME"));
+    private final String password = System.getProperty("mrs.auth.password", System.getenv("MRS_PASSWORD"));
+    private final String authApp  = System.getProperty("mrs.auth.app",  System.getenv("MRS_AUTH_APP"));
     // sessionType=bearer yields a JWT-like accessToken
-    private final String sessionType = config.get("mrs.auth.sessionType").asString().orElse("bearer");
-
-    private final Boolean insecureTls = config.get("mrs.insecureTls").asBoolean().orElse(false);
+    private final String sessionType = System.getProperty("mrs.auth.sessionType", "bearer");
 
     public MrsClient(String baseUrl, String ignoredBearerToken) {
             var builder = WebClient.builder().baseUri(baseUrl);
 
+    // Disable proxy if requested (prevents corporate/system proxy from intercepting)
+    if (Boolean.getBoolean("mrs.noProxy")) {
+        builder = builder.proxy(Proxy.noProxy());
+    }
+
     if (baseUrl.startsWith("https")) {
         builder = builder.tls(tls -> tls
-            .trustAll(insecureTls)
+            .trustAll(Boolean.getBoolean("mrs.insecureTls"))
             .endpointIdentificationAlgorithm(Tls.ENDPOINT_IDENTIFICATION_NONE) // <—
         );
     }

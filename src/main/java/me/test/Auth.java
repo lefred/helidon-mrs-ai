@@ -53,11 +53,12 @@ final class Auth {
                 }
 
                 String qJson = "{\"username\":{\"$eq\":\"" + escapeJson(username) + "\"}}";
-                String encoded = "q=" + URLEncoder.encode(qJson, StandardCharsets.UTF_8) + "&limit=1";
+                String encoded = "q=" + URLEncoder.encode(qJson, StandardCharsets.UTF_8.name()) + "&limit=1";
                 String json = mrs.get("/sakila/users/", encoded);
+                System.err.println(json);
+                boolean ok = false;
 
                 String storedHash = findFirstPasswordHash(json).map(String::trim).orElse(null);
-                boolean ok = false;
                 if (storedHash != null && !storedHash.isBlank()) {
                     try { ok = BCrypt.checkpw(password, storedHash); } catch (Exception ignore) {}
                 }
