@@ -13,7 +13,7 @@ final class LoginPage {
               <meta charset="utf-8"/>
               <meta name="viewport" content="width=device-width,initial-scale=1"/>
               <title>Sign in</title>
-              <link rel="stylesheet" href="https://unpkg.com/picocss@2/css/pico.min.css">
+	      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
               <style>
                 header.topbar{position:sticky;top:0;z-index:10;background:var(--pico-background-color);
                   border-bottom:1px solid var(--pico-muted-border-color)}
