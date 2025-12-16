@@ -17,11 +17,12 @@ public class MrsClient {
 
 
     // New: creds from -D props or env
-    private final String username = System.getProperty("mrs.auth.username", System.getenv("MRS_USERNAME"));
-    private final String password = System.getProperty("mrs.auth.password", System.getenv("MRS_PASSWORD"));
-    private final String authApp  = System.getProperty("mrs.auth.app",  System.getenv("MRS_AUTH_APP"));
+    private final String username = config.get("mrs.auth.username").asString().get();
+    private final String password = config.get("mrs.auth.password").asString().get();
+    private final String authApp  = config.get("mrs.auth.app").asString().get();
     // sessionType=bearer yields a JWT-like accessToken
-    private final String sessionType = System.getProperty("mrs.auth.sessionType", "bearer");
+    private final String sessionType = config.get("mrs.auth.sessionType").asString().get();
+
 
     public MrsClient(String baseUrl, String ignoredBearerToken) {
             var builder = WebClient.builder().baseUri(baseUrl);
@@ -31,9 +32,10 @@ public class MrsClient {
         builder = builder.proxy(Proxy.noProxy());
     }
 
+    Boolean insecureTls = config.get("mrs.insecureTls").asBoolean().get();
     if (baseUrl.startsWith("https")) {
         builder = builder.tls(tls -> tls
-            .trustAll(Boolean.getBoolean("mrs.insecureTls"))
+            .trustAll(insecureTls)
             .endpointIdentificationAlgorithm(Tls.ENDPOINT_IDENTIFICATION_NONE) // <—
         );
     }

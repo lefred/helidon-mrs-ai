@@ -21,7 +21,7 @@ public class Main {
         final DiscoveryChatService chatService;
 
         // MRS client setup
-        String baseUrl = System.getProperty("mrs.url", System.getenv("MRS_URL"));
+        String baseUrl = config.get("mrs.url").asString().get();
         if (baseUrl == null || baseUrl.isBlank()) {
             System.err.println("Missing -Dmrs.url (e.g., https://host:33060/myService/)");
             System.exit(1);
@@ -57,6 +57,6 @@ public class Main {
                 .build()
                 .start();
 
-        System.out.println("WEB server is up! http://localhost:" + server.port() + "/simple-greet");
+        System.out.println("WEB server is up! http://127.0.0.1:" + server.port() + "/ui");
     }
 }
