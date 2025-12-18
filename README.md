@@ -1,9 +1,9 @@
 # helidon-mrs-ai
 
-This repo is a demo using Helidon 4.3.0M2 with MySQL REST Service and OCI GenAI.
+This repo is a demo that uses Helidon 4.3.0 with the MySQL REST Service and OCI GenAI.
 
 
-You need to use the sakila sample database and add an `users` table like this: 
+You need to use the sakila sample database and add a `users` table like this: 
 
 ```
 SQL> use sakila;
@@ -38,7 +38,7 @@ Don't forget to create your own `src/main/resources/application.yaml` file.
 
 ## User creation
 
-You can create a user and generate his hash password using the following url:
+You can create a user and generate their hash password using the following URL:
 
 ```
 $ curl 'http://127.0.0.1:8080/_debug/hash?pwd=<mypassword>'
